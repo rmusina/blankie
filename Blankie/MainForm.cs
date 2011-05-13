@@ -76,5 +76,10 @@ namespace Blankie
         {
             Hide();
         }
+
+        private void btnClipboard_Click(object sender, EventArgs e)
+        {
+            Clipboard.SetDataObject(urlTextBox.Text, true);
+        }
     }
 }

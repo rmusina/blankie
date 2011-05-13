@@ -44,6 +44,7 @@ namespace Blankie
             this.btnMinimize = new System.Windows.Forms.Button();
             this.panel1 = new System.Windows.Forms.Panel();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
+            this.btnClipboard = new System.Windows.Forms.Button();
             this.trayMenuStrip.SuspendLayout();
             this.panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
@@ -112,6 +113,7 @@ namespace Blankie
             this.imageList.Images.SetKeyName(0, "control_play.png");
             this.imageList.Images.SetKeyName(1, "control_stop.png");
             this.imageList.Images.SetKeyName(2, "bullet_arrow_down.png");
+            this.imageList.Images.SetKeyName(3, "Clipboard-icon.png");
             // 
             // label1
             // 
@@ -157,6 +159,7 @@ namespace Blankie
             // panel1
             // 
             this.panel1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.panel1.Controls.Add(this.btnClipboard);
             this.panel1.Controls.Add(this.pictureBox1);
             this.panel1.Controls.Add(this.label1);
             this.panel1.Controls.Add(this.btnMinimize);
@@ -178,6 +181,22 @@ namespace Blankie
             this.pictureBox1.Size = new System.Drawing.Size(100, 100);
             this.pictureBox1.TabIndex = 8;
             this.pictureBox1.TabStop = false;
+            // 
+            // btnClipboard
+            // 
+            this.btnClipboard.FlatAppearance.BorderColor = System.Drawing.Color.Gray;
+            this.btnClipboard.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnClipboard.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.btnClipboard.ImageIndex = 3;
+            this.btnClipboard.ImageList = this.imageList;
+            this.btnClipboard.Location = new System.Drawing.Point(266, 85);
+            this.btnClipboard.Name = "btnClipboard";
+            this.btnClipboard.Size = new System.Drawing.Size(122, 30);
+            this.btnClipboard.TabIndex = 9;
+            this.btnClipboard.Text = "Copy to clipboard";
+            this.btnClipboard.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.btnClipboard.UseVisualStyleBackColor = true;
+            this.btnClipboard.Click += new System.EventHandler(this.btnClipboard_Click);
             // 
             // MainForm
             // 
@@ -217,6 +236,7 @@ namespace Blankie
         private System.Windows.Forms.Button btnMinimize;
         private System.Windows.Forms.Panel panel1;
         private System.Windows.Forms.PictureBox pictureBox1;
+        private System.Windows.Forms.Button btnClipboard;
     }
 }
 
