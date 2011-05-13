@@ -41,7 +41,12 @@ namespace Blankie
             this.label1 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.urlTextBox = new System.Windows.Forms.TextBox();
+            this.btnMinimize = new System.Windows.Forms.Button();
+            this.panel1 = new System.Windows.Forms.Panel();
+            this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.trayMenuStrip.SuspendLayout();
+            this.panel1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
             // 
             // trayIcon
@@ -86,10 +91,12 @@ namespace Blankie
             // 
             // btnStartStop
             // 
+            this.btnStartStop.FlatAppearance.BorderColor = System.Drawing.Color.Gray;
+            this.btnStartStop.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnStartStop.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
             this.btnStartStop.ImageIndex = 0;
             this.btnStartStop.ImageList = this.imageList;
-            this.btnStartStop.Location = new System.Drawing.Point(270, 86);
+            this.btnStartStop.Location = new System.Drawing.Point(394, 85);
             this.btnStartStop.Name = "btnStartStop";
             this.btnStartStop.Size = new System.Drawing.Size(100, 30);
             this.btnStartStop.TabIndex = 1;
@@ -104,11 +111,12 @@ namespace Blankie
             this.imageList.TransparentColor = System.Drawing.Color.Transparent;
             this.imageList.Images.SetKeyName(0, "control_play.png");
             this.imageList.Images.SetKeyName(1, "control_stop.png");
+            this.imageList.Images.SetKeyName(2, "bullet_arrow_down.png");
             // 
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(12, 9);
+            this.label1.Location = new System.Drawing.Point(136, 8);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(247, 13);
             this.label1.TabIndex = 2;
@@ -117,7 +125,7 @@ namespace Blankie
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(12, 44);
+            this.label2.Location = new System.Drawing.Point(136, 43);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(186, 13);
             this.label2.TabIndex = 5;
@@ -126,22 +134,58 @@ namespace Blankie
             // urlTextBox
             // 
             this.urlTextBox.BackColor = System.Drawing.SystemColors.Window;
-            this.urlTextBox.Location = new System.Drawing.Point(15, 60);
+            this.urlTextBox.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.urlTextBox.Location = new System.Drawing.Point(139, 59);
             this.urlTextBox.Name = "urlTextBox";
             this.urlTextBox.ReadOnly = true;
             this.urlTextBox.Size = new System.Drawing.Size(355, 20);
             this.urlTextBox.TabIndex = 6;
             // 
+            // btnMinimize
+            // 
+            this.btnMinimize.FlatAppearance.BorderColor = System.Drawing.Color.Gray;
+            this.btnMinimize.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnMinimize.ImageIndex = 2;
+            this.btnMinimize.ImageList = this.imageList;
+            this.btnMinimize.Location = new System.Drawing.Point(474, 3);
+            this.btnMinimize.Name = "btnMinimize";
+            this.btnMinimize.Size = new System.Drawing.Size(30, 30);
+            this.btnMinimize.TabIndex = 7;
+            this.btnMinimize.UseVisualStyleBackColor = false;
+            this.btnMinimize.Click += new System.EventHandler(this.btnMinimize_Click);
+            // 
+            // panel1
+            // 
+            this.panel1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.panel1.Controls.Add(this.pictureBox1);
+            this.panel1.Controls.Add(this.label1);
+            this.panel1.Controls.Add(this.btnMinimize);
+            this.panel1.Controls.Add(this.btnStartStop);
+            this.panel1.Controls.Add(this.urlTextBox);
+            this.panel1.Controls.Add(this.label2);
+            this.panel1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.panel1.Location = new System.Drawing.Point(0, 0);
+            this.panel1.Name = "panel1";
+            this.panel1.Size = new System.Drawing.Size(509, 124);
+            this.panel1.TabIndex = 8;
+            // 
+            // pictureBox1
+            // 
+            this.pictureBox1.Anchor = System.Windows.Forms.AnchorStyles.None;
+            this.pictureBox1.Image = ((System.Drawing.Image)(resources.GetObject("pictureBox1.Image")));
+            this.pictureBox1.Location = new System.Drawing.Point(18, 11);
+            this.pictureBox1.Name = "pictureBox1";
+            this.pictureBox1.Size = new System.Drawing.Size(100, 100);
+            this.pictureBox1.TabIndex = 8;
+            this.pictureBox1.TabStop = false;
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(383, 124);
-            this.Controls.Add(this.label1);
-            this.Controls.Add(this.label2);
-            this.Controls.Add(this.urlTextBox);
-            this.Controls.Add(this.btnStartStop);
-            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
+            this.ClientSize = new System.Drawing.Size(509, 124);
+            this.Controls.Add(this.panel1);
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximizeBox = false;
             this.MinimizeBox = false;
@@ -150,10 +194,11 @@ namespace Blankie
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Blankie";
             this.WindowState = System.Windows.Forms.FormWindowState.Minimized;
-            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainForm_FormClosing);
             this.trayMenuStrip.ResumeLayout(false);
+            this.panel1.ResumeLayout(false);
+            this.panel1.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.ResumeLayout(false);
-            this.PerformLayout();
 
         }
 
@@ -169,6 +214,9 @@ namespace Blankie
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.TextBox urlTextBox;
         private System.Windows.Forms.ImageList imageList;
+        private System.Windows.Forms.Button btnMinimize;
+        private System.Windows.Forms.Panel panel1;
+        private System.Windows.Forms.PictureBox pictureBox1;
     }
 }
 

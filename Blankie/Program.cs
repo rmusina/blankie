@@ -18,8 +18,6 @@ namespace Blankie
         [STAThread]
         static void Main()
         {
-            ConsoleWindow.Init();
-
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new MainForm());

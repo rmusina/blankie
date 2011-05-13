@@ -99,6 +99,7 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Images\Blankie.png" />
+    <Content Include="Images\bullet_arrow_down.png" />
     <Content Include="Images\control_play.png" />
     <Content Include="Images\control_stop.png" />
   </ItemGroup>

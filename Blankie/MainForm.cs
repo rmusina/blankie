@@ -11,13 +11,15 @@ namespace Blankie
         private Streamer streamer;
 
         private bool isSharing = false;
-        private bool reallyClosing = false;
+
         private string ip;
         private int port = 80;
 
         public MainForm()
         {
             InitializeComponent();
+
+            TopMost = true;
 
             StartPosition = FormStartPosition.Manual;
             int x = Screen.PrimaryScreen.WorkingArea.Width - this.Width;
@@ -62,7 +64,6 @@ namespace Blankie
 
         private void exitToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            reallyClosing = true;
             Close();
         }
 
@@ -71,11 +72,8 @@ namespace Blankie
             shareDesktopToolStripMenuItem_Click(null, null);
         }
 
-        private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
+        private void btnMinimize_Click(object sender, EventArgs e)
         {
-            if (reallyClosing) return;
-
-            e.Cancel = true;
             Hide();
         }
     }
