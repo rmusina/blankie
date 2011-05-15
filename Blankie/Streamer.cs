@@ -27,13 +27,22 @@ namespace Blankie
             this.ip = ip;
             this.port = port;
 
+            string outputString = ConstructOutputString(ip, port);
+            ConstructPlayer(outputString);
+        }
+
+        private void ConstructPlayer(string outputString)
+        {
             IMediaPlayerFactory factory = new MediaPlayerFactory();
 
-            string output = @":sout=#transcode{vcodec=FLV1,acodec=none,vb=1200,fps=12,scale=1}:duplicate{dst=std{access=http,mux=ffmpeg{mux=flv},dst=" + ip + ":" + port + "/Stream/stream.flv}}";
-
-            IMedia media = factory.CreateMedia<IMedia>("screen://", output);
+            IMedia media = factory.CreateMedia<IMedia>("screen://", outputString);
             player = factory.CreatePlayer<IPlayer>();
             player.Open(media);
+        }
+
+        private string ConstructOutputString(string ip, int port)
+        {
+            return @":sout=#transcode{vcodec=FLV1,acodec=none,vb=1200,fps=12,scale=1}:duplicate{dst=std{access=http,mux=ffmpeg{mux=flv},dst=" + ip + ":" + port + "/Stream/stream.flv}}";
         }
 
         public void Play()

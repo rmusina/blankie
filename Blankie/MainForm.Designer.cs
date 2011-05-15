@@ -43,8 +43,10 @@ namespace Blankie
             this.urlTextBox = new System.Windows.Forms.TextBox();
             this.btnMinimize = new System.Windows.Forms.Button();
             this.panel1 = new System.Windows.Forms.Panel();
-            this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.btnClipboard = new System.Windows.Forms.Button();
+            this.pictureBox1 = new System.Windows.Forms.PictureBox();
+            this.label3 = new System.Windows.Forms.Label();
+            this.portTextBox = new System.Windows.Forms.TextBox();
             this.trayMenuStrip.SuspendLayout();
             this.panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
@@ -159,6 +161,8 @@ namespace Blankie
             // panel1
             // 
             this.panel1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.panel1.Controls.Add(this.portTextBox);
+            this.panel1.Controls.Add(this.label3);
             this.panel1.Controls.Add(this.btnClipboard);
             this.panel1.Controls.Add(this.pictureBox1);
             this.panel1.Controls.Add(this.label1);
@@ -171,16 +175,6 @@ namespace Blankie
             this.panel1.Name = "panel1";
             this.panel1.Size = new System.Drawing.Size(509, 124);
             this.panel1.TabIndex = 8;
-            // 
-            // pictureBox1
-            // 
-            this.pictureBox1.Anchor = System.Windows.Forms.AnchorStyles.None;
-            this.pictureBox1.Image = ((System.Drawing.Image)(resources.GetObject("pictureBox1.Image")));
-            this.pictureBox1.Location = new System.Drawing.Point(18, 11);
-            this.pictureBox1.Name = "pictureBox1";
-            this.pictureBox1.Size = new System.Drawing.Size(100, 100);
-            this.pictureBox1.TabIndex = 8;
-            this.pictureBox1.TabStop = false;
             // 
             // btnClipboard
             // 
@@ -197,6 +191,35 @@ namespace Blankie
             this.btnClipboard.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             this.btnClipboard.UseVisualStyleBackColor = true;
             this.btnClipboard.Click += new System.EventHandler(this.btnClipboard_Click);
+            // 
+            // pictureBox1
+            // 
+            this.pictureBox1.Anchor = System.Windows.Forms.AnchorStyles.None;
+            this.pictureBox1.Image = ((System.Drawing.Image)(resources.GetObject("pictureBox1.Image")));
+            this.pictureBox1.Location = new System.Drawing.Point(18, 11);
+            this.pictureBox1.Name = "pictureBox1";
+            this.pictureBox1.Size = new System.Drawing.Size(100, 100);
+            this.pictureBox1.TabIndex = 8;
+            this.pictureBox1.TabStop = false;
+            // 
+            // label3
+            // 
+            this.label3.AutoSize = true;
+            this.label3.Location = new System.Drawing.Point(139, 90);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(29, 13);
+            this.label3.TabIndex = 10;
+            this.label3.Text = "Port:";
+            // 
+            // portTextBox
+            // 
+            this.portTextBox.BackColor = System.Drawing.SystemColors.Window;
+            this.portTextBox.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.portTextBox.Location = new System.Drawing.Point(168, 87);
+            this.portTextBox.MaxLength = 5;
+            this.portTextBox.Name = "portTextBox";
+            this.portTextBox.Size = new System.Drawing.Size(46, 20);
+            this.portTextBox.TabIndex = 11;
             // 
             // MainForm
             // 
@@ -237,6 +260,8 @@ namespace Blankie
         private System.Windows.Forms.Panel panel1;
         private System.Windows.Forms.PictureBox pictureBox1;
         private System.Windows.Forms.Button btnClipboard;
+        private System.Windows.Forms.TextBox portTextBox;
+        private System.Windows.Forms.Label label3;
     }
 }
 

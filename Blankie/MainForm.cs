@@ -14,6 +14,7 @@ namespace Blankie
 
         private string ip;
         private int port = 80;
+        private int oldPort;
 
         public MainForm()
         {
@@ -27,6 +28,8 @@ namespace Blankie
             Bounds = new Rectangle(x, y, this.Width, this.Height);
 
             ip = Streamer.GetExternalIp();
+            portTextBox.Text = port.ToString();
+            oldPort = port;
 
             streamer = new Streamer(ip, port);
         }
@@ -40,11 +43,25 @@ namespace Blankie
 
             if (isSharing)
             {
+                if (!Int32.TryParse(portTextBox.Text, out port))
+                {
+                    port = oldPort;
+                    portTextBox.Text = port.ToString();
+                }
+
+                if (port != oldPort)
+                {
+                    streamer = new Streamer(ip, port);
+                    oldPort = port;
+                }
+
                 urlTextBox.Text = streamer.URL;
+                portTextBox.Enabled = false;
                 streamer.Play();
             }
             else
             {
+                portTextBox.Enabled = true;
                 streamer.Stop();
             }
         }
