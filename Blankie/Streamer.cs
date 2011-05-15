@@ -5,6 +5,7 @@ using Declarations;
 using System.Net;
 using System.Text;
 using System;
+using System.Net.Sockets;
 
 namespace Blankie
 {
@@ -57,7 +58,7 @@ namespace Blankie
 
         public static string GetExternalIp()
         {
-            string whatIsMyIp = "http://www.whatismyip.com/automation/n09230945.asp";
+            /*string whatIsMyIp = "http://www.whatismyip.com/automation/n09230945.asp";
             WebClient wc = new WebClient();
             UTF8Encoding utf8 = new UTF8Encoding();
             string requestHtml = "";
@@ -67,16 +68,22 @@ namespace Blankie
                 requestHtml = utf8.GetString(wc.DownloadData(whatIsMyIp));
             }
             catch (WebException)
+            {*/
+            IPHostEntry host;
+            string localIP = "?";
+            host = Dns.GetHostEntry(Dns.GetHostName());
+            foreach (IPAddress ip in host.AddressList)
             {
-                string strHostName = Dns.GetHostName();
-
-                IPHostEntry ipEntry = Dns.GetHostEntry(strHostName);
-                IPAddress[] addr = ipEntry.AddressList;
-
-                return addr[addr.Length - 1].ToString();
+                if (ip.AddressFamily == AddressFamily.InterNetwork)
+                {
+                    localIP = ip.ToString();
+                }
             }
+            return localIP;
 
-            return requestHtml;
+            /*}
+
+            return requestHtml;*/
         }
     }
 }

@@ -1,513 +1,134 @@
-﻿namespace Imtiaz
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Net;
+using System.IO;
+using System.Web;
+using System.Globalization;
+using System.Runtime.Remoting;
+
+namespace Blankie
 {
-    using System;
-    using System.IO;
-    using System.Net;
-    using System.Net.Sockets;
-    using System.Text;
-    using System.Threading;
-
-
-    class MyWebServer
+    public class WebServer
     {
+        private HttpListener _listener = new HttpListener();
 
-        private TcpListener myListener;
-        private int port = 8080; // Select any free port you wish
+        private string _hostIP = "127.0.0.1";
 
-        //The constructor which make the TcpListener start listening on the
-        //given port. It also calls a Thread on the method StartListen(). 
-        public MyWebServer()
+        private string _port = "1234";
+
+        private string serverLocalDirectory = Directory.GetCurrentDirectory();
+
+        private string webappRelativePath = @"\page\";
+
+        public WebServer(string hostIP, string port)
         {
-            try
-            {
-                IPEndPoint ipLocal = new IPEndPoint(IPAddress.Parse("188.24.75.76"), port);
-                //start listing on the given port
-                myListener = new TcpListener(ipLocal);
-                myListener.Start();
-                Console.WriteLine("Web Server Running... Press ^C to Stop...");
-                //start the thread which calls the method 'StartListen'
-                Thread th = new Thread(new ThreadStart(StartListen));
-                th.Start();
-
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine("An Exception Occurred while Listening :" + e.ToString());
-            }
+            this._hostIP = hostIP;
+            this._port = port;
         }
 
-
-        /// <summary>
-        /// Returns The Default File Name
-        /// Input : WebServerRoot Folder
-        /// Output: Default File Name
-        /// </summary>
-        /// <param name="sMyWebServerRoot"></param>
-        /// <returns></returns>
-        public string GetTheDefaultFileName(string sLocalDirectory)
+        public WebServer(string hostIP, string port, string serverLocalDirectory, string webappRelativePath)
         {
-            StreamReader sr;
-            String sLine = "";
-
-            string output = "";
-
-            try
-            {
-                //Open the default.dat to find out the list
-                // of default file
-                sr = new StreamReader("data\\Default.Dat");
-
-                while ((sLine = sr.ReadLine()) != null)
-                {
-                    output = sLocalDirectory + "\\" + sLine;
-
-                    //Look for the default file in the web server root folder
-                    if (File.Exists(output) == true)
-                    {
-                        break;
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine("An Exception Occurred : " + e.ToString());
-            }
-            if (File.Exists(output) == true)
-                return sLine;
-            else
-                return "";
+            this._hostIP = hostIP;
+            this._port = port;
+            this.serverLocalDirectory = serverLocalDirectory;
+            this.webappRelativePath = webappRelativePath;
         }
 
-
-
-        /// <summary>
-        /// This function takes FileName as Input and returns the mime type..
-        /// </summary>
-        /// <param name="sRequestedFile">To indentify the Mime Type</param>
-        /// <returns>Mime Type</returns>
-        public string GetMimeType(string sRequestedFile)
+        public void Start()
         {
+            _listener.Prefixes.Add(String.Format("http://{0}:{1}/", _hostIP, _port));
+            _listener.AuthenticationSchemes = AuthenticationSchemes.Anonymous;
 
+            _listener.Start();
 
-            StreamReader sr;
-            String sLine = "";
-            String sMimeType = "";
-            String sFileExt = "";
-            String sMimeExt = "";
-
-            // Convert to lowercase
-            sRequestedFile = sRequestedFile.ToLower();
-
-            int iStartPos = sRequestedFile.IndexOf(".");
-
-            sFileExt = sRequestedFile.Substring(iStartPos);
-
-            try
-            {
-                //Open the Vdirs.dat to find out the list virtual directories
-                sr = new StreamReader("data\\Mime.Dat");
-
-                while ((sLine = sr.ReadLine()) != null)
-                {
-
-                    sLine.Trim();
-
-                    if (sLine.Length > 0)
-                    {
-                        //find the separator
-                        iStartPos = sLine.IndexOf(";");
-
-                        // Convert to lower case
-                        sLine = sLine.ToLower();
-
-                        sMimeExt = sLine.Substring(0, iStartPos);
-                        sMimeType = sLine.Substring(iStartPos + 1);
-
-                        if (sMimeExt == sFileExt)
-                            break;
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine("An Exception Occurred : " + e.ToString());
-            }
-
-            if (sMimeExt == sFileExt)
-                return sMimeType;
-            else
-                return "";
-        }
-
-
-
-        /// <summary>
-        /// Returns the Physical Path
-        /// </summary>
-        /// <param name="sMyWebServerRoot">Web Server Root Directory</param>
-        /// <param name="sDirName">Virtual Directory </param>
-        /// <returns>Physical local Path</returns>
-        public string GetLocalPath(string sMyWebServerRoot, string sDirName)
-        {
-
-            StreamReader sr;
-            String sLine = "";
-            String sVirtualDir = "";
-            String sRealDir = "";
-            int iStartPos = 0;
-
-
-            //Remove extra spaces
-            sDirName.Trim();
-
-
-
-            // Convert to lowercase
-            sMyWebServerRoot = sMyWebServerRoot.ToLower();
-
-            // Convert to lowercase
-            sDirName = sDirName.ToLower();
-
-            //Remove the slash
-            //sDirName = sDirName.Substring(1, sDirName.Length - 2);
-
-
-            try
-            {
-                //Open the Vdirs.dat to find out the list virtual directories
-                sr = new StreamReader("data\\VDirs.Dat");
-
-                while ((sLine = sr.ReadLine()) != null)
-                {
-                    //Remove extra Spaces
-                    sLine.Trim();
-
-                    if (sLine.Length > 0)
-                    {
-                        //find the separator
-                        iStartPos = sLine.IndexOf(";");
-
-                        // Convert to lowercase
-                        sLine = sLine.ToLower();
-
-                        sVirtualDir = sLine.Substring(0, iStartPos);
-                        sRealDir = sLine.Substring(iStartPos + 1);
-
-                        if (sVirtualDir == sDirName)
-                        {
-                            break;
-                        }
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine("An Exception Occurred : " + e.ToString());
-            }
-
-
-            Console.WriteLine("Virtual Dir : " + sVirtualDir);
-            Console.WriteLine("Directory   : " + sDirName);
-            Console.WriteLine("Physical Dir: " + sRealDir);
-            if (sVirtualDir == sDirName)
-                return sRealDir;
-            else
-                return "";
-        }
-
-
-
-        /// <summary>
-        /// This function send the Header Information to the client (Browser)
-        /// </summary>
-        /// <param name="sHttpVersion">HTTP Version</param>
-        /// <param name="sMIMEHeader">Mime Type</param>
-        /// <param name="iTotBytes">Total Bytes to be sent in the body</param>
-        /// <param name="mySocket">Socket reference</param>
-        /// <returns></returns>
-        public void SendHeader(string sHttpVersion, string sMIMEHeader, int iTotBytes, string sStatusCode, ref Socket mySocket)
-        {
-
-            String sBuffer = "";
-
-            // if Mime type is not provided set default to text/html
-            if (sMIMEHeader.Length == 0)
-            {
-                sMIMEHeader = "text/html";  // Default Mime Type is text/html
-            }
-
-            sBuffer = sBuffer + sHttpVersion + sStatusCode + "\r\n";
-            sBuffer = sBuffer + "Server: cx1193719-b\r\n";
-            sBuffer = sBuffer + "Content-Type: " + sMIMEHeader + "\r\n";
-            sBuffer = sBuffer + "Accept-Ranges: bytes\r\n";
-            sBuffer = sBuffer + "Content-Length: " + iTotBytes + "\r\n\r\n";
-
-            Byte[] bSendData = Encoding.ASCII.GetBytes(sBuffer);
-
-            SendToBrowser(bSendData, ref mySocket);
-
-            Console.WriteLine("Total Bytes : " + iTotBytes.ToString());
-
-        }
-
-
-
-        /// <summary>
-        /// Overloaded Function, takes string, convert to bytes and calls 
-        /// overloaded sendToBrowserFunction.
-        /// </summary>
-        /// <param name="sData">The data to be sent to the browser(client)</param>
-        /// <param name="mySocket">Socket reference</param>
-        public void SendToBrowser(String sData, ref Socket mySocket)
-        {
-            SendToBrowser(Encoding.ASCII.GetBytes(sData), ref mySocket);
-        }
-
-
-
-        /// <summary>
-        /// Sends data to the browser (client)
-        /// </summary>
-        /// <param name="bSendData">Byte Array</param>
-        /// <param name="mySocket">Socket reference</param>
-        public void SendToBrowser(Byte[] bSendData, ref Socket mySocket)
-        {
-            int numBytes = 0;
-
-            try
-            {
-                if (mySocket.Connected)
-                {
-                    if ((numBytes = mySocket.Send(bSendData, bSendData.Length, 0)) == -1)
-                        Console.WriteLine("Socket Error cannot Send Packet");
-                    else
-                    {
-                        Console.WriteLine("No. of bytes send {0}", numBytes);
-                    }
-                }
-                else
-                    Console.WriteLine("Connection Dropped....");
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine("Error Occurred : {0} ", e);
-
-            }
-        }
-
-
-        // Application Starts Here..
-        public static void Main()
-        {
-            MyWebServer MWS = new MyWebServer();
-        }
-
-
-
-        //This method Accepts new connection and
-        //First it receives the welcome massage from the client,
-        //Then it sends the Current date time to the Client.
-        public void StartListen()
-        {
-
-            int iStartPos = 0;
-            String sRequest;
-            String sDirName;
-            String sRequestedFile;
-            String sErrorMessage;
-            String sLocalDir;
-            String sMyWebServerRoot = Environment.CurrentDirectory;
-            String sPhysicalFilePath = "";
-            String sFormattedMessage = "";
-            String sResponse = "";
+            Console.WriteLine("Listening");
 
             while (true)
             {
-                //Accept a new connection
-                Socket mySocket = myListener.AcceptSocket();
-
-                Console.WriteLine("Socket Type " + mySocket.SocketType);
-                if (mySocket.Connected)
-                {
-                    Console.WriteLine("\nClient Connected!!\n==================\nCLient IP {0}\n",
-                        mySocket.RemoteEndPoint);
-
-
-
-                    //make a byte array and receive data from the client 
-                    Byte[] bReceive = new Byte[1024];
-                    int i = mySocket.Receive(bReceive, bReceive.Length, 0);
-
-
-
-                    //Convert Byte to String
-                    string sBuffer = Encoding.ASCII.GetString(bReceive);
-
-
-
-                    //At present we will only deal with GET type
-                    if (sBuffer.Substring(0, 3) != "GET")
-                    {
-                        Console.WriteLine("Only Get Method is supported..");
-                        mySocket.Close();
-                        return;
-                    }
-
-
-                    // Look for HTTP request
-                    iStartPos = sBuffer.IndexOf("HTTP", 1);
-
-
-                    // Get the HTTP text and version e.g. it will return "HTTP/1.1"
-                    string sHttpVersion = sBuffer.Substring(iStartPos, 8);
-
-
-                    // Extract the Requested Type and Requested file/directory
-                    sRequest = sBuffer.Substring(0, iStartPos - 1);
-
-
-                    //Replace backslash with Forward Slash, if Any
-                    sRequest.Replace("\\", "/");
-
-
-                    //If file name is not supplied add forward slash to indicate 
-                    //that it is a directory and then we will look for the 
-                    //default file name..
-                    if ((sRequest.IndexOf(".") < 1) && (!sRequest.EndsWith("/")))
-                    {
-                        sRequest = sRequest + "/";
-                    }
-
-
-                    //Extract the requested file name
-                    iStartPos = sRequest.LastIndexOf("/") + 1;
-                    sRequestedFile = sRequest.Substring(iStartPos);
-
-
-                    //Extract The directory Name
-                    sDirName = sRequest.Substring(sRequest.IndexOf("/"), sRequest.LastIndexOf("/") - 3);
-
-
-
-                    /////////////////////////////////////////////////////////////////////
-                    // Identify the Physical Directory
-                    /////////////////////////////////////////////////////////////////////
-                    if (sDirName == "/")
-                        sLocalDir = sMyWebServerRoot;
-                    else
-                    {
-                        //Get the Virtual Directory
-                        sLocalDir = GetLocalPath(sMyWebServerRoot, sDirName);
-                    }
-
-
-                    Console.WriteLine("Directory Requested : " + sLocalDir);
-
-                    //If the physical directory does not exists then
-                    // dispaly the error message
-                    if (sLocalDir.Length == 0)
-                    {
-                        sErrorMessage = "<H2>Error!! Requested Directory does not exists</H2><Br>";
-                        //sErrorMessage = sErrorMessage + "Please check data\\Vdirs.Dat";
-
-                        //Format The Message
-                        SendHeader(sHttpVersion, "", sErrorMessage.Length, " 404 Not Found", ref mySocket);
-
-                        //Send to the browser
-                        SendToBrowser(sErrorMessage, ref mySocket);
-
-                        mySocket.Close();
-
-                        continue;
-                    }
-
-
-                    /////////////////////////////////////////////////////////////////////
-                    // Identify the File Name
-                    /////////////////////////////////////////////////////////////////////
-
-                    //If The file name is not supplied then look in the default file list
-                    if (sRequestedFile.Length == 0)
-                    {
-                        // Get the default filename
-                        sRequestedFile = GetTheDefaultFileName(sLocalDir);
-
-                        if (sRequestedFile == "")
-                        {
-                            sErrorMessage = "<H2>Error!! No Default File Name Specified</H2>";
-                            SendHeader(sHttpVersion, "", sErrorMessage.Length, " 404 Not Found", ref mySocket);
-                            SendToBrowser(sErrorMessage, ref mySocket);
-
-                            mySocket.Close();
-
-                            return;
-
-                        }
-                    }
-
-
-
-
-                    /////////////////////////////////////////////////////////////////////
-                    // Get TheMime Type
-                    /////////////////////////////////////////////////////////////////////
-
-                    String sMimeType = GetMimeType(sRequestedFile);
-
-
-
-                    //Build the physical path
-                    sPhysicalFilePath = sLocalDir + "\\" + sRequestedFile;
-                    Console.WriteLine("File Requested : " + sPhysicalFilePath);
-
-
-                    if (File.Exists(sPhysicalFilePath) == false)
-                    {
-
-                        sErrorMessage = "<H2>404 Error! File Does Not Exists...</H2>";
-                        SendHeader(sHttpVersion, "", sErrorMessage.Length, " 404 Not Found", ref mySocket);
-                        SendToBrowser(sErrorMessage, ref mySocket);
-
-                        Console.WriteLine(sFormattedMessage);
-                    }
-
-                    else
-                    {
-                        int iTotBytes = 0;
-
-                        sResponse = "";
-
-
-
-
-                        FileStream fs = new FileStream(sPhysicalFilePath, FileMode.Open, FileAccess.Read, FileShare.Read);
-                        // Create a reader that can read bytes from the FileStream.
-
-
-                        BinaryReader reader = new BinaryReader(fs);
-                        byte[] bytes = new byte[fs.Length];
-                        int read;
-                        while ((read = reader.Read(bytes, 0, bytes.Length)) != 0)
-                        {
-                            // Read from the file and write the data to the network
-                            sResponse = sResponse + Encoding.ASCII.GetString(bytes, 0, read);
-
-                            iTotBytes = iTotBytes + read;
-
-                        }
-                        reader.Close();
-                        fs.Close();
-
-                        SendHeader(sHttpVersion, sMimeType, iTotBytes, " 200 OK", ref mySocket);
-
-                        SendToBrowser(bytes, ref mySocket);
-
-                        //mySocket.Send(bytes, bytes.Length,0);
-
-                    }
-                    mySocket.Close();
-                }
+                HttpListenerContext httpContext = _listener.GetContext();
+                ProcessContext(httpContext);
             }
         }
+
+        public void ProcessContext(HttpListenerContext httpListenerContext)
+        {
+            WriteRequestHeaderInformation(httpListenerContext);
+
+            byte[] buffer = CreateResponseDocument(httpListenerContext);
+            httpListenerContext.Response.OutputStream.Write(buffer, 0, buffer.Length);
+
+            httpListenerContext.Response.Close();
+        }
+
+        private string ConstructPath(string requestPath)
+        {
+            return String.Format("{0}{1}{2}", serverLocalDirectory, webappRelativePath, requestPath);
+        }
+
+        private byte[] CreateResponseDocument(HttpListenerContext httpListenerContext)
+        {
+            WebClient client = new WebClient();
+
+            Console.Out.WriteLine(httpListenerContext.Request.Url.PathAndQuery);
+
+            try
+            {
+                if (httpListenerContext.Request.Url.PathAndQuery.Length > 1)
+                {
+                    return client.DownloadData(ConstructPath(httpListenerContext.Request.Url.AbsolutePath.Replace("/", "\\")));
+                }
+
+                return client.DownloadData(ConstructPath("index.html"));
+            }
+            catch (WebException exc)
+            {
+                return Encoding.UTF8.GetBytes(String.Format("<h1>Blankie error</h1><p>{0}</p>", exc.Message));
+            }
+        }
+        private static void WriteRequestHeaderInformation(HttpListenerContext ctxt)
+        {
+            /*Console.WriteLine("Header Information:");
+            ConsoleColor oldColour = Console.ForegroundColor;
+
+            // Show all the headers in our request context
+            foreach (string key in ctxt.Request.Headers.AllKeys)
+            {
+                Console.ForegroundColor = ConsoleColor.Green;
+
+                Console.Write("[{0}]", key);
+
+                Console.CursorLeft = 25;
+                Console.ForegroundColor = ConsoleColor.Gray;
+                Console.Write(" : ");
+                Console.ForegroundColor = ConsoleColor.Cyan;
+
+                Console.WriteLine("[{0}]", ctxt.Request.Headers[key]);
+            }
+            Console.WriteLine("--");
+
+            Console.ForegroundColor = ConsoleColor.DarkCyan;
+            Console.Write("User Information");
+            Console.CursorLeft = 25;
+            Console.ForegroundColor = ConsoleColor.Gray;
+            Console.Write(" : ");
+            Console.ForegroundColor = ConsoleColor.Magenta;
+            Console.CursorLeft = 28;
+
+            if (ctxt.User != null)
+            {
+                Console.WriteLine("Type = [{0}]", ctxt.User);
+                Console.CursorLeft = 28;
+                Console.WriteLine("Name = [{0}]", ctxt.User.Identity.Name);
+            }
+            else
+            {
+                Console.WriteLine("No User defined");
+            }
+
+            Console.ForegroundColor = oldColour;*/
+        }
+
     }
 }
