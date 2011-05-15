@@ -3,6 +3,7 @@ using System.Windows.Forms;
 using System.Drawing;
 using System.Net;
 using System.Net.Sockets;
+using System.Threading;
 
 namespace Blankie
 {
@@ -10,7 +11,11 @@ namespace Blankie
     {
         private Streamer streamer;
 
+        private WebServer server;
+
         private bool isSharing = false;
+
+        private Thread serverWorker;
 
         private string ip;
         private int port = 80;
@@ -27,6 +32,11 @@ namespace Blankie
             Bounds = new Rectangle(x, y, this.Width, this.Height);
 
             ip = Streamer.GetExternalIp();
+
+            server = new WebServer(ip, "1234");
+
+            serverWorker = new Thread(server.Start);
+            serverWorker.Start();
 
             streamer = new Streamer(ip, port);
         }
@@ -64,6 +74,8 @@ namespace Blankie
 
         private void exitToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            streamer.Stop();
+            serverWorker.Abort();
             Close();
         }
 

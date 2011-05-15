@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+ <title>Blankie Stream</title>
+ <script type="text/javascript" src="flowplayer-3.2.6.min.js"></script>
+ <meta content="text/html; charset=ISO-8859-1" http-equiv="content-type">
+</head>
+<body>
+
+  <a href="http://10.14.228.165:80/Stream/stream.flv" style="display:block;width:520px;height:330px" id="player"></a>
+  
+  <script>
+    flowplayer("player", "flowplayer-3.2.7.swf", { plugins: {
+        controls: {
+            all:false,
+            fullscreen:true
+            }
+        }});
+  </script>
+  
+</body>
+</html>
