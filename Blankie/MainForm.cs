@@ -18,7 +18,8 @@ namespace Blankie
         private Thread serverWorker;
 
         private string ip;
-        private int port = 80;
+        private int serverPort = 1234;
+        private int streamerPort;
         private int oldPort;
 
         public MainForm()
@@ -33,15 +34,16 @@ namespace Blankie
             Bounds = new Rectangle(x, y, this.Width, this.Height);
 
             ip = Streamer.GetExternalIp();
-            portTextBox.Text = port.ToString();
-            oldPort = port;
+            portTextBox.Text = serverPort.ToString();
+            streamerPort = serverPort + 1;
+            oldPort = serverPort;
 
-            server = new WebServer(ip, "1234");
+            server = new WebServer(ip, serverPort.ToString(), streamerPort.ToString());
 
             serverWorker = new Thread(server.Start);
             serverWorker.Start();
 
-            streamer = new Streamer(ip, port);
+            streamer = new Streamer(ip, streamerPort);
         }
 
         private void btnStartStop_Click(object sender, EventArgs e)
@@ -53,19 +55,19 @@ namespace Blankie
 
             if (isSharing)
             {
-                if (!Int32.TryParse(portTextBox.Text, out port))
+                if (!Int32.TryParse(portTextBox.Text, out streamerPort))
                 {
-                    port = oldPort;
-                    portTextBox.Text = port.ToString();
+                    streamerPort = oldPort + 1;
+                    portTextBox.Text = streamerPort.ToString();
                 }
 
-                if (port != oldPort)
+                if (streamerPort != oldPort)
                 {
-                    streamer = new Streamer(ip, port);
-                    oldPort = port;
+                    streamer = new Streamer(ip, streamerPort);
+                    oldPort = streamerPort;
                 }
 
-                urlTextBox.Text = streamer.URL;
+                urlTextBox.Text = server.URL;
                 portTextBox.Enabled = false;
                 streamer.Play();
             }

@@ -58,7 +58,7 @@ namespace Blankie
 
         public static string GetExternalIp()
         {
-            /*string whatIsMyIp = "http://www.whatismyip.com/automation/n09230945.asp";
+            string whatIsMyIp = "http://www.whatismyip.com/automation/n09230945.asp";
             WebClient wc = new WebClient();
             UTF8Encoding utf8 = new UTF8Encoding();
             string requestHtml = "";
@@ -68,22 +68,21 @@ namespace Blankie
                 requestHtml = utf8.GetString(wc.DownloadData(whatIsMyIp));
             }
             catch (WebException)
-            {*/
-            IPHostEntry host;
-            string localIP = "?";
-            host = Dns.GetHostEntry(Dns.GetHostName());
-            foreach (IPAddress ip in host.AddressList)
             {
-                if (ip.AddressFamily == AddressFamily.InterNetwork)
+                IPHostEntry host;
+                string localIP = "?";
+                host = Dns.GetHostEntry(Dns.GetHostName());
+                foreach (IPAddress ip in host.AddressList)
                 {
-                    localIP = ip.ToString();
+                    if (ip.AddressFamily == AddressFamily.InterNetwork)
+                    {
+                        localIP = ip.ToString();
+                    }
                 }
+                return localIP;
             }
-            return localIP;
 
-            /*}
-
-            return requestHtml;*/
+            return requestHtml;
         }
     }
 }
