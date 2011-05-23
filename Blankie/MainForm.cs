@@ -15,8 +15,6 @@ namespace Blankie
 
         private bool isSharing = false;
 
-        private Thread serverWorker;
-
         private string ip;
         private int serverPort = 1234;
         private int streamerPort;
@@ -38,10 +36,8 @@ namespace Blankie
             streamerPort = serverPort + 1;
             oldPort = serverPort;
 
-            server = new WebServer(ip, serverPort.ToString(), streamerPort.ToString());
-
-            serverWorker = new Thread(server.Start);
-            serverWorker.Start();
+            server = new WebServer(ip, serverPort, streamerPort);
+            server.StartListening();
 
             streamer = new Streamer(ip, streamerPort);
         }
@@ -94,7 +90,6 @@ namespace Blankie
         private void exitToolStripMenuItem_Click(object sender, EventArgs e)
         {
             streamer.Stop();
-            serverWorker.Abort();
             Close();
         }
 
