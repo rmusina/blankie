@@ -7,18 +7,23 @@ using System.IO;
 using System.Web;
 using System.Globalization;
 using System.Runtime.Remoting;
+using System.Diagnostics;
+using System.Net.Sockets;
+using System.Windows.Forms;
 
 namespace Blankie
 {
     public class WebServer
     {
-        private HttpListener _listener = new HttpListener();
+        private Socket _socketListener;
+
+        byte[] _dataBytes = new byte[1024];
 
         private string _hostIP = "127.0.0.1";
 
-        private string _port = "1234";
+        private int _port = 80;
 
-        private string _streamerPort = "8080";
+        private int _streamerPort = 81;
 
         private string serverLocalDirectory = Directory.GetCurrentDirectory();
 
@@ -32,62 +37,139 @@ namespace Blankie
             }
         }
 
-        public WebServer(string hostIP, string port, string streamerPort)
+        public WebServer(string hostIP,
+                         int port,
+                         int streamerPort)
         {
             this._hostIP = hostIP;
             this._port = port;
             this._streamerPort = streamerPort;
         }
 
-        public WebServer(string hostIP, string port, string serverLocalDirectory, string webappRelativePath)
+        public WebServer(string hostIP,
+                         int port,
+                         string serverLocalDirectory,
+                         string webappRelativePath,
+                         int streamerPort)
         {
             this._hostIP = hostIP;
             this._port = port;
             this.serverLocalDirectory = serverLocalDirectory;
             this.webappRelativePath = webappRelativePath;
+            this._streamerPort = streamerPort;
         }
 
-        public void Start()
+        #region Request-Response Cycle
+        public void StartListening()
         {
-            _listener.Prefixes.Add(String.Format("http://{0}:{1}/", _hostIP, _port));
-            _listener.AuthenticationSchemes = AuthenticationSchemes.Anonymous;
-
-            _listener.Start();
-
-            Console.WriteLine("Listening");
-
-            while (true)
+            try
             {
-                HttpListenerContext httpContext = _listener.GetContext();
-                ProcessContext(httpContext);
+                _socketListener = new Socket(AddressFamily.InterNetwork,
+                                            SocketType.Stream,
+                                            ProtocolType.Tcp);
+
+                IPEndPoint localIP = new IPEndPoint(IPAddress.Any, _port);
+
+                _socketListener.Bind(localIP);
+                _socketListener.Listen(5);
+
+                _socketListener.BeginAccept(new AsyncCallback(OnClientConnect), null);
+            }
+            catch (SocketException exc)
+            {
+                MessageBox.Show(exc.Message);
             }
         }
 
-        public void ProcessContext(HttpListenerContext httpListenerContext)
+        public void OnClientConnect(IAsyncResult asyn)
         {
-            WriteRequestHeaderInformation(httpListenerContext);
+            try
+            {
+                Socket socketWorker = _socketListener.EndAccept(asyn);
+                _socketListener.BeginAccept(new AsyncCallback(OnClientConnect), null);
 
-            string path = httpListenerContext.Request.Url.PathAndQuery;
-            string contentType = "text/html";
+                //UIWriteLine(String.Format("Request sent by {0}.", socketWorker.RemoteEndPoint.ToString()));
 
-            if (path.EndsWith(".js")) contentType = "application/x-javascript"; else
-            if (path.EndsWith(".swf")) contentType = "application/x-shockwave-flash";
-
-            httpListenerContext.Response.ContentType = contentType;
-
-            byte[] buffer = CreateResponseDocument(httpListenerContext);
-            
-            httpListenerContext.Response.OutputStream.Write(buffer, 0, buffer.Length);
-
-            httpListenerContext.Response.Close();
+                WaitForData(socketWorker);
+            }
+            catch (SocketException exc)
+            {
+                MessageBox.Show(exc.Message);
+            }
         }
 
-        private string ConstructPath(string requestPath)
+        private void WaitForData(Socket socketWorker)
         {
-            return String.Format("{0}{1}{2}", serverLocalDirectory, webappRelativePath, requestPath);
+            try
+            {
+                socketWorker.BeginReceive(_dataBytes, 0, _dataBytes.Length, SocketFlags.None,
+                                          new AsyncCallback(RecieveCallback), socketWorker);
+            }
+            catch (SocketException exc)
+            {
+                MessageBox.Show(exc.Message);
+            }
         }
 
-        private string ConstructHTML()
+        private void RecieveCallback(IAsyncResult asyn)
+        {
+            Socket socketWorker = (Socket)asyn.AsyncState;
+            socketWorker.EndReceive(asyn);
+
+            string clientRequest = new System.Text.UTF8Encoding().GetString(_dataBytes).TrimEnd(new char[] { '\0' });
+
+            Send(socketWorker, clientRequest);
+        }
+
+        public void Send(Socket clientSocket, string clientRequest)
+        {
+            //UIWriteLine(clientRequest);
+
+            byte[] responseDocument = CreateResponseDocument(clientRequest);
+
+            //UIWriteLine(Encoding.UTF8.GetString(responseDocument));
+
+            clientSocket.BeginSend(responseDocument, 0, responseDocument.Length, SocketFlags.None,
+                                   new AsyncCallback(SendHeaderCallback), clientSocket);
+        }
+
+        public void SendHeaderCallback(IAsyncResult ar)
+        {
+            try
+            {
+                Socket clientSocket = (Socket)ar.AsyncState;
+
+                int bytesRead = clientSocket.EndSend(ar);
+
+                clientSocket.Close();
+            }
+            catch (Exception exc)
+            {
+                MessageBox.Show(exc.Message);
+            }
+        }
+        #endregion
+
+        #region Client Request Processing
+
+        private string GetMimeType(string fileName)
+        {
+            string mimeType = "application/unknown";
+            string ext = System.IO.Path.GetExtension(fileName).ToLower();
+            Microsoft.Win32.RegistryKey regKey = Microsoft.Win32.Registry.ClassesRoot.OpenSubKey(ext);
+            if (regKey != null && regKey.GetValue("Content Type") != null)
+            {
+                mimeType = regKey.GetValue("Content Type").ToString();
+            }
+            else if (ext == ".js")
+            {
+                mimeType = "application/javascript";
+            }
+
+            return mimeType;
+        }
+
+        private byte[] GetIndexHTML()
         {
             string output =
                 @"
@@ -116,72 +198,73 @@ namespace Blankie
                     </html>
                 ";
 
-            return output;
+            return Encoding.UTF8.GetBytes(output);
         }
 
-        private byte[] CreateResponseDocument(HttpListenerContext httpListenerContext)
+        private byte[] GetResponseHeader(string filePath, int fileLength)
         {
-            WebClient client = new WebClient();
+            byte[] responseHeader = Encoding.ASCII.GetBytes(String.Format("HTTP/1.1 200 OK\r\n" +
+                                                                         "Server: BlankieServer\r\n" +
+                                                                         "Date: {0}\r\n" +
+                                                                         "Accept-Ranges: bytes\r\n" +
+                                                                         "Content-Length: {1}\r\n" +
+                                                                         "Connection: close\r\n" +
+                                                                         "Content-Type: {2}; charset=UTF-8\r\n\r\n", DateTime.Now, fileLength, GetMimeType(filePath)));
 
-            Console.Out.WriteLine(httpListenerContext.Request.Url.PathAndQuery);
+            return responseHeader;
+        }
 
+        private string ConstructPath(string requestPath)
+        {
+            return String.Format("{0}{1}{2}", serverLocalDirectory, webappRelativePath, requestPath);
+        }
+
+        private string GetRequestedFile(string clientRequest)
+        {
+            string requestMethodData = clientRequest.Substring(0, clientRequest.IndexOf("HTTP")).Trim();
+            string[] methodData = requestMethodData.Split(new char[] { ' ' });
+
+            if (methodData.Length < 0 || methodData[0] != "GET")
+            {
+                throw new InvalidOperationException("Request not supported by the blankie server.");
+            }
+
+            if (methodData.Length < 2)
+            {
+                throw new InvalidOperationException("Malformed GET parameters");
+            }
+
+            return methodData[1] != "/" ? methodData[1].Replace("/", "\\").Substring(1) : "index.html";
+        }
+
+        private byte[] ConcatenateHeaderAndDocument(byte[] responseHeader, byte[] responseDocument)
+        {
+            byte[] response = new byte[responseHeader.Length + responseDocument.Length];
+
+            responseHeader.CopyTo(response, 0);
+            responseDocument.CopyTo(response, responseHeader.Length);
+
+            return response;
+        }
+
+        private byte[] CreateResponseDocument(string clientRequest)
+        {
             try
             {
-                if (httpListenerContext.Request.Url.PathAndQuery.Length > 1)
-                {
-                    return client.DownloadData(ConstructPath(httpListenerContext.Request.Url.AbsolutePath.Replace("/", "\\")));
-                }
+                string fileName = GetRequestedFile(clientRequest);
+                string filePath = ConstructPath(fileName);
 
-                return Encoding.UTF8.GetBytes(ConstructHTML());
+                byte[] responseDocument = fileName == "index.html" ? GetIndexHTML() : new WebClient().DownloadData(filePath);
+                byte[] responseHeader = GetResponseHeader(filePath, responseDocument.Length);
+
+                return ConcatenateHeaderAndDocument(responseHeader, responseDocument);
             }
-            catch (WebException exc)
+            catch (Exception exc)
             {
                 return Encoding.UTF8.GetBytes(String.Format("<h1>Blankie error</h1><p>{0}</p>", exc.Message));
             }
         }
 
-        private static void WriteRequestHeaderInformation(HttpListenerContext ctxt)
-        {
-            /*Console.WriteLine("Header Information:");
-            ConsoleColor oldColour = Console.ForegroundColor;
-
-            // Show all the headers in our request context
-            foreach (string key in ctxt.Request.Headers.AllKeys)
-            {
-                Console.ForegroundColor = ConsoleColor.Green;
-
-                Console.Write("[{0}]", key);
-
-                Console.CursorLeft = 25;
-                Console.ForegroundColor = ConsoleColor.Gray;
-                Console.Write(" : ");
-                Console.ForegroundColor = ConsoleColor.Cyan;
-
-                Console.WriteLine("[{0}]", ctxt.Request.Headers[key]);
-            }
-            Console.WriteLine("--");
-
-            Console.ForegroundColor = ConsoleColor.DarkCyan;
-            Console.Write("User Information");
-            Console.CursorLeft = 25;
-            Console.ForegroundColor = ConsoleColor.Gray;
-            Console.Write(" : ");
-            Console.ForegroundColor = ConsoleColor.Magenta;
-            Console.CursorLeft = 28;
-
-            if (ctxt.User != null)
-            {
-                Console.WriteLine("Type = [{0}]", ctxt.User);
-                Console.CursorLeft = 28;
-                Console.WriteLine("Name = [{0}]", ctxt.User.Identity.Name);
-            }
-            else
-            {
-                Console.WriteLine("No User defined");
-            }
-
-            Console.ForegroundColor = oldColour;*/
-        }
-
+        #endregion
     }
 }

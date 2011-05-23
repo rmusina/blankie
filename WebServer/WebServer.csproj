@@ -36,6 +36,7 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -48,6 +49,9 @@
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>
+    <Content Include="page\favicon.ico">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="page\flowplayer-3.2.6.min.js">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
