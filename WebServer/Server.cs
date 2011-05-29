@@ -174,26 +174,37 @@ namespace Blankie
             string output =
                 @"
                     <!DOCTYPE html>
-
                     <html>
                     <head>
-                    <title>Blankie Stream</title>
-                    <script type='text/javascript' src='flowplayer-3.2.6.min.js'></script>
                     <meta content='text/html; charset=ISO-8859-1' http-equiv='content-type'>
+                    <title>Blankie Stream</title>            
+                    <script type='text/javascript' src='flowplayer-3.2.6.min.js'></script>
+                    <style type='text/css'>
+                        body { margin: 0; padding: 0; font-family: Arial; }
+                        div.top-level { margin: auto; width: 960px; text-align: center; }
+                        div.header { height: 150px; }
+                        div.content { height: 600px; }
+                        a#player { display: block; width: 960px; height: 600px; margin: auto; }
+                    </style>
                     </head>
                     <body>
-
-                    <a href='http://" + _hostIP + @":" + _streamerPort + @"/Stream/stream.flv' style='display:block;width:520px;height:330px' id='player'></a>
-  
-                    <script>
-                    flowplayer('player', 'flowplayer-3.2.7.swf', { plugins: {
-                        controls: {
-                            all:false,
-                            fullscreen:true
-                            }
-                        }});
-                    </script>
-  
+                        <div class='top-level'>
+                            <div class='header'>
+                                <h1>Blankie Stream</h1>
+                                <h3>Broadcasting from " + _hostIP + @"</h3>
+                            </div>
+                            <div class='content'>
+                                <a href='http://" + _hostIP + @":" + _streamerPort + @"/Stream/stream.flv' id='player'></a>  
+                                <script>
+                                flowplayer('player', 'flowplayer-3.2.7.swf', { plugins: {
+                                    controls: {
+                                        all:false,
+                                        fullscreen:true
+                                        }
+                                    }});
+                                </script>
+                            </div>
+                        </div>  
                     </body>
                     </html>
                 ";
