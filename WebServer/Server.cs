@@ -157,6 +157,7 @@ namespace Blankie
             string mimeType = "application/unknown";
             string ext = System.IO.Path.GetExtension(fileName).ToLower();
             Microsoft.Win32.RegistryKey regKey = Microsoft.Win32.Registry.ClassesRoot.OpenSubKey(ext);
+
             if (regKey != null && regKey.GetValue("Content Type") != null)
             {
                 mimeType = regKey.GetValue("Content Type").ToString();
@@ -183,6 +184,7 @@ namespace Blankie
                         body { margin: 0; padding: 0; font-family: Arial; }
                         div.top-level { margin: auto; width: 960px; text-align: center; }
                         div.header { height: 150px; }
+                        div.footer { height: 200px; }
                         div.content { height: 600px; }
                         a#player { display: block; width: 960px; height: 600px; margin: auto; }
                     </style>
@@ -203,6 +205,9 @@ namespace Blankie
                                         }
                                     }});
                                 </script>
+                            </div>
+                            <div class='footer'>
+                                <img src='fullscreen.png' alt='click there for fullscreen' />
                             </div>
                         </div>  
                     </body>
